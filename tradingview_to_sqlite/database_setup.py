@@ -56,7 +56,8 @@ def create_db(db_path: str = DB_PATH) -> None:
             expiry_month TEXT,
             expiry_year INT,
             exchange TEXT,
-            is_expired BOOLEAN
+            is_expired BOOLEAN,
+            expiration_date TEXT
         )
         """)
 
