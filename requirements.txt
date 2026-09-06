@@ -1,0 +1,6 @@
+pandas
+numpy
+SQLAlchemy
+requests
+websocket-client
+git+https://github.com/batprem/price-loaders.git@fix/default-return-data-to-numerical
