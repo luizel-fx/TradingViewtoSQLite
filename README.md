@@ -62,7 +62,7 @@ contracts = {
 }
 
 # then you executes
-scrapps_and_save(contracts)
+scraping_and_save(contracts)
 ```
 The contract dictionaty must have the following structure:
 
