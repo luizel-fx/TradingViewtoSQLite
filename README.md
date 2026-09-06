@@ -10,8 +10,6 @@ A Python library to scrape futures price data from TradingView and persist it di
 - **One-Call Database Setup & Seeding**: Initialize schemas and download multi-year historical contract series with a single function call.
 - **Delta/Incremental Updates**: Automatically checks `MAX(date)` for each active contract, computes the missing day gap, and fetches only the delta from TradingView.
 - **Expiration Detection**: Detects when contracts have stopped trading and flags them as expired (`is_expired = 1`).
-- **Rich Predefined Universe**: Includes built-in contract specs for Brazilian (BM&F B3) and US agricultural/energy/interest rate futures (CME, CBOT, NYMEX).
-- **Customizable DB Paths**: Configure where `futures.db` is stored.
 
 ---
 
