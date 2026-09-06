@@ -36,85 +36,75 @@ pip install -e .
 ## Quick Start
 
 ### 1. Initial Setup & Seeding
-
-Import `setup` and the built-in `contracts` universe to build your database:
-
 ```python
-from tradingview_to_sqlite import setup, contracts
+from tradingview_to_sqlite.database_setup import create_db
+from tradingview_to_sqlite.load_data import scrapps_and_save
+from tradingview_to_sqlite.database_update import update_active_contracts
 
-# Creates tables and downloads historical OHLC data for all default contracts
-setup(contracts)
-```
+# Starts creating the database
+create_db()
 
-You can also specify a custom SQLite database file path:
-
-```python
-setup(contracts, db_path="path/to/my_futures.db")
-```
-
-### 2. Daily Incremental Updates
-
-Keep your database up-to-date daily without re-downloading entire histories:
-
-```python
-from tradingview_to_sqlite import update_active_contracts
-
-# Fetches only missing days for active contracts and marks expired ones
-update_active_contracts()
-
-# Or with a custom database path:
-# update_active_contracts(db_path="path/to/my_futures.db")
-```
-
----
-
-## Predefined Contracts Universe
-
-The library ships with `contracts`, a dictionary preconfigured for common commodities, indices, currencies, and bonds:
-
-| Symbol | Exchange | Underlying / Description |
-| :--- | :--- | :--- |
-| `CCM` | `BMFBOVESPA` | Milho Futuro (Corn) |
-| `BGI` | `BMFBOVESPA` | Boi Gordo Futuro (Live Cattle) |
-| `DI1` | `BMFBOVESPA` | Taxa DI de 1 Dia |
-| `DOL` | `BMFBOVESPA` | Dólar Comercial Futuro |
-| `SJC` | `BMFBOVESPA` | Soja Futuro (Soybeans) |
-| `ZS` | `CBOT` | Soybeans Futures |
-| `ZC` | `CBOT` | Corn Futures |
-| `ZW` | `CBOT` | Wheat Futures |
-| `ZN` | `CBOT` | 10-Year U.S. Treasury Note Futures |
-| `ZQ` | `CBOT` | 30-Day Federal Funds Futures |
-| `LE` | `CME` | Live Cattle Futures |
-| `HE` | `CME` | Lean Hogs Futures |
-| `CL` | `NYMEX` | Crude Oil (WTI) |
-| `BZ` | `NYMEX` | Brent Crude Oil |
-
----
-
-## Customizing Contract Selection
-
-You can easily pass your own dictionary of contracts to `setup()`:
-
-```python
-from tradingview_to_sqlite import setup
-
-my_contracts = {
+# and make a dictionary containing the contracts wanted 
+contracts = {
     "CCM": [
         "BMFBOVESPA",
-        ["F", "H", "K", "N", "U", "X"],               # Month codes
-        [2023, 2024, 2025, 2026],                     # Years
+        ["F", "H", "K", "N", "U", "X"],               # Jan, Mar, Mai, Jul, Set, Nov
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
     ],
-    "CL": [
-        "NYMEX",
-        ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"],
-        [2024, 2025, 2026],
+    "BGI": [
+        "BMFBOVESPA",
+        ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"], # Todos os meses
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+    ],
+    "DI1": [
+        "BMFBOVESPA",
+        ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"], # Todos os meses
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
     ]
 }
 
-setup(my_contracts)
+# then you executes
+scrapps_and_save(contracts)
 ```
+The contract dictionaty must have the following structure:
 
----
+{
+    asset: [
+        exchange,
+        list_of_expire_months,
+        list_of_expire_years
+    ]
+}
+
+### 2. Daily Incremental Updates
+
+```python
+# If you need to update the database...
+
+update_active_contracts()
+
+# And to add contracts that are not in the database yet, just execute
+
+new_contracts = {
+    "DOL": [
+        "BMFBOVESPA",
+        ["F", "G", "H", "J", "K", "M", "N", "Q", "U", "V", "X", "Z"], # Todos os meses
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+    ],
+    "ZS": [
+        "CBOT",
+        ["F", "H", "K", "N", "Q", "U", "X"],          # Jan, Mar, Mai, Jul, Ago, Set, Nov
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+    ],
+    "ZC": [
+        "CBOT",
+        ["H", "K", "N", "U", "Z"],                    # Mar, Mai, Jul, Set, Dez
+        [2020, 2021, 2022, 2023, 2024, 2025, 2026],
+    ]
+}
+
+scrapps_and_save(new_contracts)
+```
 
 ## Querying Price Data
 
