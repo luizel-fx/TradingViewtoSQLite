@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tradingview-to-sqlite"
+version = "0.1.0"
+description = "Scrape TradingView futures price data and persist to a local SQLite database."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Luiz E. Lima" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "pandas",
+    "numpy",
+    "SQLAlchemy",
+    "requests",
+    "websocket-client",
+    "price-loaders @ git+https://github.com/batprem/price-loaders.git@fix/default-return-data-to-numerical"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tradingview_to_sqlite*"]
