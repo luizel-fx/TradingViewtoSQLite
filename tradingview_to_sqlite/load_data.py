@@ -125,7 +125,7 @@ def load_data_to_db(
     conn.close()
 
 
-def scrapps_and_save(symbol_dict: dict, db_path: str = "futures.db") -> None:
+def scraping_and_save(symbol_dict: dict, db_path: str = "futures.db") -> None:
     """Scrape multiple futures contracts and persist them to the database.
 
     Parameters
