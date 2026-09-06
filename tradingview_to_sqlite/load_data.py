@@ -87,8 +87,10 @@ def load_data_to_db(
 
     if last_symbol_date < last_data_pool - timedelta(days=10):
         expired = True
+        expiration_date = last_symbol_date
     else:
         expired = False
+        expiration_date = None
 
     data.apply(
         lambda x: cursor.execute(
@@ -115,10 +117,11 @@ def load_data_to_db(
         expiry_month,
         expiry_year,
         exchange,
-        is_expired
-    ) VALUES (?, ?, ?, ?, ?, ?)
+        is_expired,
+        expiration_date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """,
-        (ticker, symbol, expire_month, expire_year, exchange, expired),
+        (ticker, symbol, expire_month, expire_year, exchange, expired, str(expiration_date)),
     )
 
     conn.commit()

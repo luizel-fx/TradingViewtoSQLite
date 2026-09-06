@@ -10,13 +10,16 @@ Main API:
     - ``create_db()``: Creates tables in SQLite.
     - ``db_connection()``: Connects to SQLite database.
     - ``load_symbol_data()``: Fetches OHLC bars for a single contract.
-    - ``scrapps_and_save()``: Batch scrapes contracts and inserts to database.
+    - ``scraping_and_save()``: Batch scrapes contracts and inserts to database.
+    - ``load_continuous_contract()``: Loads continuous contract data from the database.
 """
 
 from .database_setup import create_db, db_connection
-from .load_data import load_symbol_data, load_data_to_db, scrapps_and_save
+from .load_data import load_symbol_data, load_data_to_db, scraping_and_save
 from .database_update import update_active_contracts
 from .contracts import contracts, DEFAULT_CONTRACTS
+from .data_access import load_continuous_contract
+from .data_access import load_prices
 
 
 def setup(symbol_dict: dict = None, db_path: str = "futures.db") -> None:
@@ -33,7 +36,7 @@ def setup(symbol_dict: dict = None, db_path: str = "futures.db") -> None:
     if symbol_dict is None:
         symbol_dict = contracts
     create_db(db_path=db_path)
-    scrapps_and_save(symbol_dict, db_path=db_path)
+    scraping_and_save(symbol_dict, db_path=db_path)
 
 
 __all__ = [
@@ -45,5 +48,7 @@ __all__ = [
     "db_connection",
     "load_symbol_data",
     "load_data_to_db",
-    "scrapps_and_save",
+    "scrapping_and_save",
+    "load_continuous_contract",
+    "load_prices",
 ]
