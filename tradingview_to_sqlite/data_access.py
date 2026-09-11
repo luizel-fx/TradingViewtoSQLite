@@ -23,7 +23,7 @@ def load_prices(ticker, start_date, end_date):
     pd.DataFrame
         A DataFrame containing the price data.
     """
-    return pd.read_sql_query("SELECT * FROM futures WHERE ticker = ? AND date BETWEEN ? AND ?", db_connection(), params=(ticker, start_date, end_date))
+    return pd.read_sql_query("SELECT * FROM futures WHERE ticker = ? AND date BETWEEN ? AND ?", db_connection(), params=(ticker, start_date, end_date), parse_dates=["date"])
 
 
 def load_continuous_contract(asset, start_date, end_date, roll_rule="1st"):
