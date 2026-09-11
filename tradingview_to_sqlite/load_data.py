@@ -7,13 +7,54 @@ it to the local SQLite database.
 
 from datetime import date, timedelta
 import pandas as pd
+from .expire_rules import *
 from price_loaders.tradingview import load_asset_price
+
 
 try:
     from .database_setup import db_connection
 except ImportError:
     from database_setup import db_connection
 
+
+# =================== 
+# Dictionary mapping the underlying asset to its expire date rule funcion
+
+EXPIRY_ROUTER = {
+    # BMFBOVESPA (B3)
+    'BMFBOVESPA:DI1': b3_first_biz_day,
+    'BMFBOVESPA:DOL': b3_first_biz_day,
+    'BMFBOVESPA:WDO': b3_first_biz_day,
+    'BMFBOVESPA:EUR': b3_first_biz_day,
+    'BMFBOVESPA:BGI': b3_last_biz_day,
+    'BMFBOVESPA:ETH': b3_last_biz_day,
+    'BMFBOVESPA:CCM': b3_day_15_next_biz,
+    'BMFBOVESPA:DAP': b3_day_15_next_biz,
+    'BMFBOVESPA:SFI': b3_day_15_next_biz,
+    'BMFBOVESPA:IND': b3_ind_expiry,
+    'BMFBOVESPA:WIN': b3_ind_expiry,
+    'BMFBOVESPA:ICF': b3_icf_expiry,
+    
+    # CME Group (CBOT / CME / NYMEX)
+    'CBOT:ZC': us_day_15_prev_biz,
+    'CBOT:ZS': us_day_15_prev_biz,
+    'CBOT:ZW': us_day_15_prev_biz,
+    'CBOT:ZQ': us_last_biz_day,          # Fed Funds
+    'CME:ES': us_third_friday,
+    'CME:NQ': us_third_friday,
+    'CME:SR1': us_last_biz_day,          # 1-Month SOFR
+    'CME:SR3': us_last_biz_day,          # 3-Month SOFR
+    'NYMEX:CL': us_wti_expiry,
+    
+    # ICE Futures Europe / LME
+    'ICEEUR:BRN': uk_brent_expiry,       # Brent Crude Oil
+    'ICEEUR:SONF': uk_third_wednesday,   # SONIA Futures
+    'ICEEUR:Z': uk_third_friday,         # FTSE 100 Index
+    
+    # LME Metals (Exemplos de underlying codes na TV: CAD para Copper, AHD para Aluminum)
+    'LME:CAD': uk_third_wednesday,       
+    'LME:AHD': uk_third_wednesday        
+}
 
 def load_symbol_data(
     exchange: str,
@@ -81,17 +122,12 @@ def load_data_to_db(
         conn.close()
         return
 
-    last_symbol_date = data["date"].max()
-    if isinstance(last_symbol_date, str):
-        last_symbol_date = date.fromisoformat(last_symbol_date)
-
-    if last_symbol_date < last_data_pool - timedelta(days=10):
+    expiration_date = EXPIRY_ROUTER[ticker](expire_month, expire_year)
+    
+    if date.today > expiration_date:
         expired = True
-        expiration_date = last_symbol_date
     else:
         expired = False
-        expiration_date = None
-
     data.apply(
         lambda x: cursor.execute(
             """
