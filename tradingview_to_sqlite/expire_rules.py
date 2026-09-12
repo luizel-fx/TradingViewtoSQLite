@@ -43,19 +43,23 @@ def _get_nth_weekday(year: int, month: int, weekday: int, n: int) -> date:
 
 # ==========================================
 # REGRAS B3 (BRASIL)
+# Usa holidays.B3 (BrasilBolsaBalcao) em vez do calendário
+# nacional holidays.Brazil. O calendário da bolsa reflete os
+# pregões efetivamente fechados (ex.: inclui Carnaval e Corpus
+# Christi, que não constam no calendário nacional padrão).
 # ==========================================
 def b3_first_biz_day(exp_month: str, exp_year: int) -> date:
     """DI1, DOL, WDO, EUR: 1º dia útil do mês de vencimento."""
-    return _get_first_biz_day(exp_year, _get_month_num(exp_month), holidays.Brazil(years=exp_year))
+    return _get_first_biz_day(exp_year, _get_month_num(exp_month), holidays.B3(years=exp_year))
 
 def b3_last_biz_day(exp_month: str, exp_year: int) -> date:
     """BGI, ETH: Último dia útil do mês de vencimento."""
-    return _get_last_biz_day(exp_year, _get_month_num(exp_month), holidays.Brazil(years=exp_year))
+    return _get_last_biz_day(exp_year, _get_month_num(exp_month), holidays.B3(years=exp_year))
 
 def b3_day_15_next_biz(exp_month: str, exp_year: int) -> date:
     """CCM, DAP, SFI: Dia 15. Se não for útil, próximo dia útil."""
     dt = date(exp_year, _get_month_num(exp_month), 15)
-    cal = holidays.Brazil(years=exp_year)
+    cal = holidays.B3(years=exp_year)
     while not _is_biz_day(dt, cal):
         dt += timedelta(days=1)
     return dt
@@ -63,22 +67,22 @@ def b3_day_15_next_biz(exp_month: str, exp_year: int) -> date:
 def b3_ind_expiry(exp_month: str, exp_year: int) -> date:
     """IND, WIN: Quarta-feira mais próxima do dia 15. Se não for útil, próximo."""
     dt = date(exp_year, _get_month_num(exp_month), 15)
-    cal = holidays.Brazil(years=exp_year)
-    
+    cal = holidays.B3(years=exp_year)
+
     # Ajusta para a quarta-feira (weekday == 2) mais próxima
     offset = (2 - dt.weekday()) % 7
-    if offset > 3: 
+    if offset > 3:
         offset -= 7
     dt += timedelta(days=offset)
-    
+
     while not _is_biz_day(dt, cal):
         dt += timedelta(days=1)
     return dt
 
 def b3_icf_expiry(exp_month: str, exp_year: int) -> date:
     """ICF (Café Arábica): 6º dia útil anterior ao último dia útil do mês."""
-    dt = _get_last_biz_day(exp_year, _get_month_num(exp_month), holidays.Brazil(years=exp_year))
-    cal = holidays.Brazil(years=exp_year)
+    cal = holidays.B3(years=exp_year)
+    dt = _get_last_biz_day(exp_year, _get_month_num(exp_month), cal)
     count = 0
     while count < 6:
         dt -= timedelta(days=1)
@@ -88,11 +92,16 @@ def b3_icf_expiry(exp_month: str, exp_year: int) -> date:
 
 # ==========================================
 # REGRAS CME / CBOT / NYMEX / COMEX (EUA)
+# Usa holidays.CME (CME Group) em vez do calendário nacional
+# holidays.US. CME, CBOT, NYMEX e COMEX compartilham o mesmo
+# calendário de feriados do CME Group (não há classes separadas
+# na biblioteca `holidays` para cada bolsa individualmente), que
+# é bem mais enxuto que o calendário de feriados federais dos EUA.
 # ==========================================
 def us_day_15_prev_biz(exp_month: str, exp_year: int) -> date:
     """ZC, ZS, ZW: Dia 15. Se não for útil, dia útil anterior."""
     dt = date(exp_year, _get_month_num(exp_month), 15)
-    cal = holidays.US(years=exp_year)
+    cal = holidays.CME(years=exp_year)
     while not _is_biz_day(dt, cal):
         dt -= timedelta(days=1)
     return dt
@@ -103,7 +112,7 @@ def us_third_friday(exp_month: str, exp_year: int) -> date:
 
 def us_last_biz_day(exp_month: str, exp_year: int) -> date:
     """SOFR, ZQ: Último dia útil do mês."""
-    return _get_last_biz_day(exp_year, _get_month_num(exp_month), holidays.US(years=exp_year))
+    return _get_last_biz_day(exp_year, _get_month_num(exp_month), holidays.CME(years=exp_year))
 
 def us_wti_expiry(exp_month: str, exp_year: int) -> date:
     """CL (WTI): 3 dias úteis antes do dia 25 do mês anterior."""
@@ -113,14 +122,14 @@ def us_wti_expiry(exp_month: str, exp_year: int) -> date:
     if target_month == 0:
         target_month = 12
         target_year -= 1
-        
+
     dt = date(target_year, target_month, 25)
-    cal = holidays.US(years=target_year)
-    
+    cal = holidays.CME(years=target_year)
+
     # Se o dia 25 não for útil, a regra base se move para o dia útil anterior antes de contar os 3 dias
     while not _is_biz_day(dt, cal):
         dt -= timedelta(days=1)
-        
+
     count = 0
     while count < 3:
         dt -= timedelta(days=1)
@@ -130,6 +139,10 @@ def us_wti_expiry(exp_month: str, exp_year: int) -> date:
 
 # ==========================================
 # REGRAS ICE / LME (REINO UNIDO E GLOBAIS)
+# uk_brent_expiry usa holidays.IFEU (ICE Futures Europe) em vez
+# do calendário nacional holidays.UK, já que o Brent é negociado
+# na ICE Futures Europe, não segue o calendário de feriados
+# bancários do Reino Unido.
 # ==========================================
 def uk_brent_expiry(exp_month: str, exp_year: int) -> date:
     """Brent (ICE): Último dia útil do segundo mês anterior."""
@@ -139,8 +152,8 @@ def uk_brent_expiry(exp_month: str, exp_year: int) -> date:
     if target_month <= 0:
         target_month += 12
         target_year -= 1
-        
-    return _get_last_biz_day(target_year, target_month, holidays.UK(years=target_year))
+
+    return _get_last_biz_day(target_year, target_month, holidays.IFEU(years=target_year))
 
 def uk_third_wednesday(exp_month: str, exp_year: int) -> date:
     """LME Metals, SONIA: 3ª quarta-feira do mês de vencimento."""
