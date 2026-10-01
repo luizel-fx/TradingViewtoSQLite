@@ -176,7 +176,7 @@ from tradingview_to_sqlite import (
     db_connection,           # db_connection(db_path="futures.db")
     load_symbol_data,        # load_symbol_data(exchange, symbol, expire_month, expire_year, backward_days=10000)
     load_data_to_db,         # load_data_to_db(exchange, symbol, expire_month, expire_year, backward_days=10000, db_path="futures.db")
-    scrapps_and_save,        # scrapps_and_save(symbol_dict, db_path="futures.db")
+    scraping_and_save,        # scrapps_and_save(symbol_dict, db_path="futures.db")
 )
 ```
 
